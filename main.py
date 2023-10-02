@@ -5,6 +5,9 @@ import math
 import numpy as np
 import mediapipe as mp
 from collections import Counter
+from process_frame import ProcessFrame  # Ajusta los nombres de módulos, clases y funciones según sea necesario
+from thresholds import get_thresholds_beginner, get_thresholds_pro
+from utils import get_mediapipe_pose, draw_text
 
 # Estados de la ejecución
 WAITING = 1
@@ -177,8 +180,9 @@ def estimate_complexion(cap):
 
 def assign_exercises_and_rpm(age, gender, complexion, height):
     # Lista de ejercicios asignados y RPM objetivo para bicicleta de spinning
-    assigned_exercises = []
+    exercise_goal = 0
     rpm_target = 0
+    is_pro = False
     
     # Verificar si la persona es apta para ejercicios
     if '60-100' in age:
@@ -186,26 +190,28 @@ def assign_exercises_and_rpm(age, gender, complexion, height):
     
     # Asignar ejercicios y RPM objetivo basándose en la complexión de la persona
     if complexion == "Endomorfo":
-        assigned_exercises = ["Light walking", "Soft cycling"]
+        exercise_goal = 5
         rpm_target = 60
     elif complexion == "Mesomorfo":
-        assigned_exercises = ["Running", "Moderate cycling", "Weight lifting"]
+        exercise_goal = 10
         rpm_target = 80
+        is_pro = True
     elif complexion == "Ectomorfo":
-        assigned_exercises = ["Sprints", "Intense cycling", "Resistance exercises"]
+        exercise_goal = 15
         rpm_target = 100
     
     # Ajustar ejercicios y RPM objetivo basándose en el género
     if gender == "Mujer":
-        assigned_exercises.append("Yoga")
         rpm_target -= 10
+        is_pro = False
     
     # Ajustar ejercicios y RPM objetivo basándose en la edad
     if '48-53' in age or '38-43' in age:
-        assigned_exercises = ["Moderate walking", "Yoga"]
+        is_pro = False
+        exercise_goal = 3
         rpm_target = 50
     
-    return assigned_exercises, rpm_target
+    return exercise_goal, rpm_target, is_pro
 
 def main():
 
@@ -283,7 +289,7 @@ def main():
                     complexion_mode = Counter(body_data).most_common(1)[0][0]
                     
                     # Asignar ejercicios y RPM objetivo
-                    assigned_exercises, rpm_target = assign_exercises_and_rpm(age_mode, gender_mode, complexion_mode, height_mode)
+                    exercise_goal, rpm_target, is_pro = assign_exercises_and_rpm(age_mode, gender_mode, complexion_mode, height_mode)
                 
                     state = CHOOSING
 
@@ -295,7 +301,7 @@ def main():
                     cv2.putText(frame, f"Edad: {age_mode}", (10, 50), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 255, 0), 1)
                     cv2.putText(frame, f"Altura: {height_mode}", (10, 70), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 255, 0), 1)
                     cv2.putText(frame, f"Complexion: {complexion_mode}", (10, 90), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 255, 0), 1)
-                    cv2.putText(frame, f"Ejercicio: {', '.join(assigned_exercises)}", (10, 110), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 255, 0), 1)
+                    cv2.putText(frame, f"Sentadillas: {exercise_goal}", (10, 110), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 255, 0), 1)
                     cv2.putText(frame, f"RPM Spinning: {rpm_target}", (10, 130), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 255, 0), 1)
 
                     cv2.putText(frame, "Escoge: <- Bicicleta | Ejercicio ->", (60, 200), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 0, 255), 1)
@@ -312,6 +318,28 @@ def main():
                             elif gesture == "right":
                                 chosen_action = "assigned_exercises"
                                 break
+                    if(chosen_action == "assigned_exercises"):
+
+                        mp_pose = mp.solutions.pose
+                        pose = mp_pose.Pose(static_image_mode=False, model_complexity=1, smooth_landmarks=True)
+
+                        # Configura los umbrales según el nivel de habilidad
+                        thresholds = get_thresholds_pro() if is_pro else get_thresholds_beginner()
+                        
+                        # Crea una instancia de la clase ProcessFrame
+                        processor = ProcessFrame(thresholds)
+
+                        # Crea una instancia de la clase ProcessFrame
+                        processor = ProcessFrame(thresholds)
+                        # Procesa el frame y obtén retroalimentación
+                        frame, feedback = processor.process(frame, pose)
+
+                        if processor.squat_count >= exercise_goal:
+                            print("¡Límite de sentadillas alcanzado!")
+                            break
+
+                        # Muestra la retroalimentación en el frame
+                        draw_text(frame, feedback)
                     
                     if chosen_action:
                         cv2.putText(frame, f"Accion Elegida: {chosen_action}", (60, 220), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 0, 0), 1)
