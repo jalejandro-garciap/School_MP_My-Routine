@@ -4,15 +4,19 @@ import pyautogui
 import time
 import math
 import numpy as np
+import requests  # Importa la biblioteca requests
+import json
+import RPi.GPIO as GPIO
 import mediapipe as mp
+from datetime import datetime
 from collections import Counter
 from process_frame import ProcessFrame  # Ajusta los nombres de módulos, clases y funciones según sea necesario
 from thresholds import get_thresholds_beginner, get_thresholds_pro
 from utils import get_mediapipe_pose, draw_text
 from smartcard.CardMonitoring import CardMonitor, CardObserver
 from smartcard.util import toHexString
-import time
-import RPi.GPIO as GPIO
+import random
+
 
 # Estados de la ejecución
 WAITING = 1
@@ -27,6 +31,9 @@ gender_model = "models/gender_deploy.prototxt"
 gender_weights = "models/gender_net.caffemodel"
 eye_cascade_path = "data/haarcascade/eye.xml"
 face_cascade_path = 'data/haarcascade/frontalface_default.xml'
+
+# API Rest connection
+url = 'http://localhost:8080/MiRutina'
 
 # Listas con posibles edades y géneros que el modelo puede predecir
 AGE_LIST = ['0-2', '4-6', '8-12', '15-20', '25-32', '38-43', '48-53', '60-100']
@@ -402,6 +409,45 @@ def main():
 
                         # Si se alcanza el objetivo de ejercicio, puedes romper el bucle o dar una señal al usuario
                         if processor.squat_count >= exercise_goal:  # Reemplaza squat_count con el método o atributo real
+                            data = {
+                                "challengeCompleted": True,  # o cualquier lógica para determinar si se completó el desafío
+                                "createdAt": datetime.now().isoformat(),  # fecha y hora actuales en formato ISO
+                                "duration": random.randint(30000, 60000),  # reemplaza con la variable correcta o lógica para calcular la duración
+                                "exercise": {
+                                    "exerciseType": "SQUATS",
+                                    "id": 1  # ID fijo como proporcionaste
+                                },
+                                "passenger": {
+                                    "createdAt": "2023-10-20",  # fecha fija como proporcionaste
+                                    "email": "karime.perez5588@alumnos.udg.mx",
+                                    "firstName": "Karime Daniela",
+                                    "id": 1,  # ID fijo como proporcionaste
+                                    "lastName": "Perez Juarez",
+                                    "passengerType": "STUDENTS"  # tipo fijo como proporcionaste
+                                },
+                                "station": "CUCEI"  # reemplaza con la variable correcta o el valor que representa tu estación
+                            }
+                            # Convierte el diccionario de datos a formato JSON
+                            json_data = json.dumps(data)
+
+                            # Define la URL a la que deseas enviar la solicitud POST
+                            api = url + '/api/exercise-record'
+
+                            # Envía la solicitud POST
+                            try:
+                                response = requests.post(api, data=json_data, headers={'Content-Type': 'application/json'})
+
+                                # Verifica si la solicitud fue exitosa
+                                if response.status_code == 200 or response.status_code == 201:
+                                    print('Datos enviados correctamente.')
+                                else:
+                                    print(f'Error al enviar los datos: {response.status_code}')
+                                    print(response.text)  # Muestra el mensaje de error del servidor
+
+                            except requests.exceptions.RequestException as e:
+                                # Maneja tu error aquí en caso de que no puedas hacer la solicitud
+                                print(f'Error al realizar la solicitud: {e}')
+
                             print("¡Límite de sentadillas alcanzado!")
                             # Aquí podrías romper el bucle, mostrar una pantalla de felicitación, etc.
                             break
@@ -421,6 +467,45 @@ def main():
                                 flag = False
 
                         if(count >= rpm_target):
+                            data = {
+                                "challengeCompleted": True,  # o cualquier lógica para determinar si se completó el desafío
+                                "createdAt": datetime.now().isoformat(),  # fecha y hora actuales en formato ISO
+                                "duration": random.randint(30000, 60000),  # reemplaza con la variable correcta o lógica para calcular la duración
+                                "exercise": {
+                                    "exerciseType": "SPINNING",
+                                    "id": 1  # ID fijo como proporcionaste
+                                },
+                                "passenger": {
+                                    "createdAt": "2023-10-20",  # fecha fija como proporcionaste
+                                    "email": "karime.perez5588@alumnos.udg.mx",
+                                    "firstName": "Karime Daniela",
+                                    "id": 1,  # ID fijo como proporcionaste
+                                    "lastName": "Perez Juarez",
+                                    "passengerType": "STUDENTS"  # tipo fijo como proporcionaste
+                                },
+                                "station": "CUCEI"  # reemplaza con la variable correcta o el valor que representa tu estación
+                            }
+                            # Convierte el diccionario de datos a formato JSON
+                            json_data = json.dumps(data)
+
+                            # Define la URL a la que deseas enviar la solicitud POST
+                            api = url + '/api/exercise-record'
+
+                            # Envía la solicitud POST
+                            try:
+                                response = requests.post(api, data=json_data, headers={'Content-Type': 'application/json'})
+
+                                # Verifica si la solicitud fue exitosa
+                                if response.status_code == 200 or response.status_code == 201:
+                                    print('Datos enviados correctamente.')
+                                else:
+                                    print(f'Error al enviar los datos: {response.status_code}')
+                                    print(response.text)  # Muestra el mensaje de error del servidor
+
+                            except requests.exceptions.RequestException as e:
+                                # Maneja tu error aquí en caso de que no puedas hacer la solicitud
+                                print(f'Error al realizar la solicitud: {e}')
+
                             print("¡Límite de vueltas alcanzado!")
                             break
 
