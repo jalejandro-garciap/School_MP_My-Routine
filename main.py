@@ -420,7 +420,7 @@ def main():
                             if(flag != False):
                                 flag = False
 
-                        if(rpm_target >= count):
+                        if(count >= rpm_target):
                             print("¡Límite de vueltas alcanzado!")
                             break
 
