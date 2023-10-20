@@ -9,6 +9,9 @@ from collections import Counter
 from process_frame import ProcessFrame  # Ajusta los nombres de módulos, clases y funciones según sea necesario
 from thresholds import get_thresholds_beginner, get_thresholds_pro
 from utils import get_mediapipe_pose, draw_text
+from smartcard.CardMonitoring import CardMonitor, CardObserver
+from smartcard.util import toHexString
+import time
 
 # Estados de la ejecución
 WAITING = 1
@@ -237,6 +240,20 @@ def assign_exercises_and_rpm(age, gender, complexion, height):
     
     return exercise_goal, rpm_target, is_pro
 
+
+class PrintObserver(CardObserver):
+    def __init__(self):
+        self.card_present = False  # Atributo para rastrear el estado de la tarjeta
+
+    def update(self, observable, actions):
+        (addedcards, removedcards) = actions
+        for card in addedcards:
+            print("+ Se ha insertado una tarjeta: ", toHexString(card.atr))
+            self.card_present = True  # Actualiza el estado cuando se inserta una tarjeta
+        for card in removedcards:
+            print("- Se ha retirado una tarjeta: ", toHexString(card.atr))
+            self.card_present = False  # Actualiza el estado cuando se retira una tarjeta
+
 def main():
 
     physical_traits = []
@@ -245,6 +262,11 @@ def main():
     state = WAITING
     chosen_action = None
     
+    # Configura el observador de la tarjeta
+    cardobserver = PrintObserver()
+    cardmonitor = CardMonitor()
+    cardmonitor.addObserver(cardobserver)
+
     try:
         cap = cv2.VideoCapture(0) # Inicializa la cámara
     except Exception as e:
@@ -261,8 +283,15 @@ def main():
     mp_hands = mp.solutions.hands
     with mp_hands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5) as hands:
         while True:
+
+            if not cardobserver.card_present:
+                print("Por favor, inserte su tarjeta RFID para comenzar.")
+                # Aquí podrías también agregar lógica para mostrar un mensaje en la interfaz gráfica, si tienes una.
+                continue  # Salta el resto del bucle y vuelve a comprobar
+
             frame = get_frame(cap)
             if frame is not None:
+
                 faces = detect_face(frame, face_cascade)
                 
                 # Estado: WAITING
@@ -270,8 +299,8 @@ def main():
                     if len(faces) > 0:
                         # Dibujar rectángulo alrededor del rostro
                         x, y, w, h = faces[0]
-                        cv2.rectangle(frame, (x, y), (x+w, y+h), (22, 192, 115), 2)
-                        
+                        cv2.rectangle(frame, (x, y), (x+w, y+h), (22, 192, 115), 2)                        
+
                         if start_time is None:
                             start_time = time.time()
                             
