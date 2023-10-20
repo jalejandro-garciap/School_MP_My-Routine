@@ -10,7 +10,7 @@ class ProcessFrame:
         # Counter
         self.squat_count = 0
 
-        # Set if frame should be flipped or not.
+        #Set if frame should be flipped or not.
         self.flip_frame = flip_frame
 
         # self.thresholds
@@ -158,8 +158,6 @@ class ProcessFrame:
 
         return frame
 
-
-
     def process(self, frame: np.array, pose):
         play_sound = None
        
@@ -210,9 +208,9 @@ class ProcessFrame:
                 draw_text(
                     frame, 
                     "CORRECT: " + str(self.state_tracker['SQUAT_COUNT']), 
-                    pos=(int(frame_width*0.68), 30),
+                    pos=(int(frame_width*0.80), 20),
                     text_color=(255, 255, 230),
-                    font_scale=0.7,
+                    font_scale=0.6,
                     text_color_bg=(18, 185, 0)
                 )  
                 
@@ -220,9 +218,9 @@ class ProcessFrame:
                 draw_text(
                     frame, 
                     "INCORRECT: " + str(self.state_tracker['IMPROPER_SQUAT']), 
-                    pos=(int(frame_width*0.68), 80),
+                    pos=(int(frame_width*0.80), 60),
                     text_color=(255, 255, 230),
-                    font_scale=0.7,
+                    font_scale=0.6,
                     text_color_bg=(221, 0, 0),
                     
                 )  
@@ -233,7 +231,7 @@ class ProcessFrame:
                     'CAMERA NOT ALIGNED PROPERLY!!!', 
                     pos=(30, frame_height-60),
                     text_color=(255, 255, 230),
-                    font_scale=0.65,
+                    font_scale=0.50,
                     text_color_bg=(255, 153, 0),
                 ) 
                 
@@ -243,7 +241,7 @@ class ProcessFrame:
                     'OFFSET ANGLE: '+str(offset_angle), 
                     pos=(30, frame_height-30),
                     text_color=(255, 255, 230),
-                    font_scale=0.65,
+                    font_scale=0.50,
                     text_color_bg=(255, 153, 0),
                 ) 
 
@@ -472,9 +470,9 @@ class ProcessFrame:
                 draw_text(
                     frame, 
                     "CORRECT: " + str(self.state_tracker['SQUAT_COUNT']), 
-                    pos=(int(frame_width*0.68), 30),
+                    pos=(int(frame_width*0.80), 20),
                     text_color=(255, 255, 230),
-                    font_scale=0.7,
+                    font_scale=0.6,
                     text_color_bg=(18, 185, 0)
                 )  
                 
@@ -482,9 +480,9 @@ class ProcessFrame:
                 draw_text(
                     frame, 
                     "INCORRECT: " + str(self.state_tracker['IMPROPER_SQUAT']), 
-                    pos=(int(frame_width*0.68), 80),
+                    pos=(int(frame_width*0.80), 60),
                     text_color=(255, 255, 230),
-                    font_scale=0.7,
+                    font_scale=0.6,
                     text_color_bg=(221, 0, 0),
                     
                 )  
@@ -518,9 +516,9 @@ class ProcessFrame:
             draw_text(
                     frame, 
                     "CORRECT: " + str(self.state_tracker['SQUAT_COUNT']), 
-                    pos=(int(frame_width*0.68), 30),
+                    pos=(int(frame_width*0.80), 20),
                     text_color=(255, 255, 230),
-                    font_scale=0.7,
+                    font_scale=0.6,
                     text_color_bg=(18, 185, 0)
                 )  
                 
@@ -528,9 +526,9 @@ class ProcessFrame:
             draw_text(
                     frame, 
                     "INCORRECT: " + str(self.state_tracker['IMPROPER_SQUAT']), 
-                    pos=(int(frame_width*0.68), 80),
+                    pos=(int(frame_width*0.80), 60),
                     text_color=(255, 255, 230),
-                    font_scale=0.7,
+                    font_scale=0.6,
                     text_color_bg=(221, 0, 0),
                     
                 )  
@@ -554,5 +552,3 @@ class ProcessFrame:
             
             
         return frame, play_sound
-
-                    

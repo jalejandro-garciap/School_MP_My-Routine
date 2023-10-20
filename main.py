@@ -1,5 +1,6 @@
 import sys
 import cv2
+import pyautogui
 import time
 import math
 import numpy as np
@@ -27,6 +28,19 @@ face_cascade_path = 'data/haarcascade/frontalface_default.xml'
 AGE_LIST = ['0-2', '4-6', '8-12', '15-20', '25-32', '38-43', '48-53', '60-100']
 GENDER_LIST = ['Hombre', 'Mujer']
 
+# Obtiene el tamaño del monitor principal
+screen_width, screen_height = pyautogui.size()
+
+# Calcula las coordenadas de la mitad e inferior de la pantalla
+middle_x = screen_width // 18
+middle_y = screen_height // 18
+bottom_y = screen_height - 650
+margin_y = screen_height - 620
+
+# Establece el tamaño de la ventana al tamaño del monitor
+cv2.namedWindow('frame', cv2.WND_PROP_FULLSCREEN)
+cv2.setWindowProperty('frame', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+
 # Declaración de funciones
 def load_models():
     age_net = cv2.dnn.readNet(age_model, age_weights)
@@ -39,6 +53,7 @@ def get_frame(cap):
     if not ret:
         print("No se logro grabar la imagen")
         return None
+    frame = cv2.flip(frame, 1)
     return frame
 
 def get_landmark_coordinates(landmarks, landmark):
@@ -154,6 +169,7 @@ def estimate_complexion(cap):
             if not ret:
                 continue
 
+            frame = cv2.flip(frame, 1)
             image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             results = pose.process(image)
 
@@ -177,6 +193,12 @@ def estimate_complexion(cap):
                 complexion = evaluate_complexion(ratio)
 
                 return frame, complexion
+            
+def print_results(gender_mode, age_mode, height_mode, complexion_mode):
+    print(f"Sexo: {gender_mode}")
+    print(f"Edad: {age_mode}")
+    print(f"Altura: {height_mode}")
+    print(f"Complexion: {complexion_mode}")
 
 def assign_exercises_and_rpm(age, gender, complexion, height):
     # Lista de ejercicios asignados y RPM objetivo para bicicleta de spinning
@@ -184,6 +206,8 @@ def assign_exercises_and_rpm(age, gender, complexion, height):
     rpm_target = 0
     is_pro = False
     
+    print_results(gender, age, height, complexion)
+
     # Verificar si la persona es apta para ejercicios
     if '60-100' in age:
         return "No apto para ejercicios. Consulta a un médico.", rpm_target
@@ -241,15 +265,17 @@ def main():
                     if len(faces) > 0:
                         # Dibujar rectángulo alrededor del rostro
                         x, y, w, h = faces[0]
-                        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+                        cv2.rectangle(frame, (x, y), (x+w, y+h), (22, 192, 115), 2)
                         
                         if start_time is None:
                             start_time = time.time()
                             
                         elapsed_time = int(time.time() - start_time)
                         if elapsed_time < 5:
-                            cv2.putText(frame, f"Espera: {5 - elapsed_time} seg", (10, 30), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 255, 0), 1)
-                            
+
+                            texto = f"Espera: {5 - elapsed_time} seg"
+                            draw_text(frame, texto, 8, font=cv2.FONT_HERSHEY_SIMPLEX, pos=(30, 20), font_scale=0.8, font_thickness=2, text_color=(255, 255, 255), text_color_bg=(255, 150, 0))
+
                             # Analizar rostro
                             age, gender, height = detect_age_gender_height(faces[0], frame, age_net, gender_net)
                             if height is not None:
@@ -258,7 +284,7 @@ def main():
                             state = ANALYZING
                             start_time = None
                     else:
-                        cv2.putText(frame, "Mira a la pantalla", (10, 30), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 0, 255), 1)
+                        draw_text(frame, "Mira a la pantalla", 8, font=cv2.FONT_HERSHEY_SIMPLEX, pos=(30, 20), font_scale=0.8, font_thickness=2, text_color=(255, 255, 255), text_color_bg=(10, 0, 255))
                         start_time = None  # Reiniciar el cronómetro cuando no se detecta ningún rostro
                         
                 # Estado: ANALYZING
@@ -269,14 +295,15 @@ def main():
                     elapsed_time = int(time.time() - start_time)
                     if elapsed_time < 8:
                         if elapsed_time < 3:  # Tiempo de advertencia
-                            cv2.putText(frame, "Alejate de la pantalla", (10, 30), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 0, 255), 1)
+                            draw_text(frame, "Alejate de la pantalla", 8, font=cv2.FONT_HERSHEY_SIMPLEX, pos=(30, 20), font_scale=0.8, font_thickness=2, text_color=(255, 255, 255), text_color_bg=(10, 0, 255))
                         
                         else:                          
                             # Analizar cuerpo
                             frame, complexion = estimate_complexion(cap)  # Recibe el frame modificado
                             body_data.append(complexion)
                             
-                            cv2.putText(frame, f"Espera: {8 - elapsed_time} seg", (10, 30), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 255, 0), 1)
+                            texto = f"Espera: {8 - elapsed_time} seg"
+                            draw_text(frame, texto, 8, font=cv2.FONT_HERSHEY_SIMPLEX, pos=(30, 20), font_scale=0.8, font_thickness=2, text_color=(255, 255, 255), text_color_bg=(255, 150, 0))
                             
                     else:
                         state = DISPLAYING
@@ -296,15 +323,7 @@ def main():
                 # Estado: CHOOSING
                 elif state == CHOOSING:
 
-                    # Mostrar resultados
-                    cv2.putText(frame, f"Sexo: {gender_mode}", (10, 30), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 255, 0), 1)
-                    cv2.putText(frame, f"Edad: {age_mode}", (10, 50), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 255, 0), 1)
-                    cv2.putText(frame, f"Altura: {height_mode}", (10, 70), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 255, 0), 1)
-                    cv2.putText(frame, f"Complexion: {complexion_mode}", (10, 90), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 255, 0), 1)
-                    cv2.putText(frame, f"Sentadillas: {exercise_goal}", (10, 110), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 255, 0), 1)
-                    cv2.putText(frame, f"RPM Spinning: {rpm_target}", (10, 130), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 255, 0), 1)
-
-                    cv2.putText(frame, "Escoge: <- Bicicleta | Ejercicio ->", (60, 200), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 0, 255), 1)
+                    #draw_text(frame, "Escoge: <- Bicicleta | Ejercicio ->", 8, font=cv2.FONT_HERSHEY_SIMPLEX, pos=(middle_x, bottom_y), font_scale=0.7, font_thickness=2, text_color=(255, 255, 255), text_color_bg=(255, 150, 0))
 
                     image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     results = hands.process(image)
@@ -318,6 +337,20 @@ def main():
                             elif gesture == "right":
                                 chosen_action = "assigned_exercises"
                                 break
+
+                    if chosen_action == "spinning_target" or chosen_action == "assigned_exercises":
+                        text_action=f"Accion Elegida: {chosen_action}"
+                    elif chosen_action == None:
+                        draw_text(frame, "Escoge: <- Bicicleta | Ejercicio ->", 8, font=cv2.FONT_HERSHEY_SIMPLEX, pos=(middle_x, bottom_y), font_scale=0.7, font_thickness=2, text_color=(255, 255, 255), text_color_bg=(255, 150, 0))
+
+                    if chosen_action == "spinning_target":
+                        bicycle = f"RPM Spinning: {rpm_target}"
+                        draw_text(frame, bicycle, 8, font=cv2.FONT_HERSHEY_SIMPLEX, pos=(30, 20), font_scale=0.8, font_thickness=2, text_color=(255, 255, 255), text_color_bg=(255, 150, 0))
+                    elif chosen_action == "assigned_exercises":
+                        squat = f"Sentadillas: {exercise_goal}"
+                        draw_text(frame, squat, 8, font=cv2.FONT_HERSHEY_SIMPLEX, pos=(30, 20), font_scale=0.8, font_thickness=2, text_color=(255, 255, 255), text_color_bg=(255, 150, 0))
+                        
+
                     if(chosen_action == "assigned_exercises"):
 
                         mp_pose = mp.solutions.pose
@@ -341,8 +374,8 @@ def main():
                         # Muestra la retroalimentación en el frame
                         draw_text(frame, feedback)
                     
-                    if chosen_action:
-                        cv2.putText(frame, f"Accion Elegida: {chosen_action}", (60, 220), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 0, 0), 1)
+                    #if chosen_action:
+                        #cv2.putText(frame, f"Accion Elegida: {chosen_action}", (middle_x, margin_y), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 0, 0), 1)
 
                 cv2.imshow('frame', frame)
 
