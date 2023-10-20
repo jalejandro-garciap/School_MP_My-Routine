@@ -409,19 +409,20 @@ def main():
                     
                     elif(chosen_action == "spinning_target"):
                         
-                        while count >= rpm_target:
-                            step = GPIO.input(HallSensorGPIO)
-                            if(step == 0):
-                                if(flag != True):
-                                    flag = True
-                                    count += 1
-                                    print(count)
-                            else:
-                                if(flag != False):
-                                    flag = False
+                        step = GPIO.input(HallSensorGPIO)  # Leer el sensor Hall
 
-                        print("¡Límite de vueltas alcanzado!")
-                        break
+                        if(step == 0):
+                            if(flag != True):
+                                flag = True
+                                count += 1
+                                print(count)
+                        else:
+                            if(flag != False):
+                                flag = False
+
+                        if(rpm_target >= count):
+                            print("¡Límite de vueltas alcanzado!")
+                            break
 
                 cv2.imshow('frame', frame)
 
