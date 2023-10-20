@@ -12,6 +12,7 @@ from utils import get_mediapipe_pose, draw_text
 from smartcard.CardMonitoring import CardMonitor, CardObserver
 from smartcard.util import toHexString
 import time
+import RPi.GPIO as GPIO
 
 # Estados de la ejecución
 WAITING = 1
@@ -397,6 +398,27 @@ def main():
                             print("¡Límite de sentadillas alcanzado!")
                             # Aquí podrías romper el bucle, mostrar una pantalla de felicitación, etc.
                             break
+
+                    
+                    elif(chosen_action == "spinning_target"):
+
+                        count = 0
+                        HallSensorGPIO = 3 # PIN
+                        GPIO.setmode(GPIO.BOARD)
+                        GPIO.setup(HallSensorGPIO, GPIO.IN)
+                        flag = False
+                        while count >= rpm_target:
+                            step = GPIO.input(HallSensorGPIO)
+                            if(step == 0):
+                                if(flag != True):
+                                    flag = True
+                                    count += 1
+                                    print(count)
+                            else:
+                                if(flag != False):
+                                    flag = False
+
+                        print("¡Límite de vueltas alcanzado!")
 
                 cv2.imshow('frame', frame)
 
