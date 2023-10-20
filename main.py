@@ -344,7 +344,7 @@ def main():
                         draw_text(frame, "Escoge: <- Bicicleta | Ejercicio ->", 8, font=cv2.FONT_HERSHEY_SIMPLEX, pos=(middle_x, bottom_y), font_scale=0.7, font_thickness=2, text_color=(255, 255, 255), text_color_bg=(255, 150, 0))
 
                     if chosen_action == "spinning_target":
-                        bicycle = f"RPM Spinning: {rpm_target}"
+                        bicycle = f"RPM de giro: {rpm_target}"
                         draw_text(frame, bicycle, 8, font=cv2.FONT_HERSHEY_SIMPLEX, pos=(30, 20), font_scale=0.8, font_thickness=2, text_color=(255, 255, 255), text_color_bg=(255, 150, 0))
                     elif chosen_action == "assigned_exercises":
                         squat = f"Sentadillas: {exercise_goal}"

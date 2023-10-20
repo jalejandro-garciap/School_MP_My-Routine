@@ -139,7 +139,7 @@ class ProcessFrame:
         if lower_hips_disp:
             draw_text(
                     frame, 
-                    'LOWER YOUR HIPS', 
+                    'BAJA TUS CADERAS', 
                     pos=(30, 80),
                     text_color=(0, 0, 0),
                     font_scale=0.6,
@@ -207,7 +207,7 @@ class ProcessFrame:
 
                 draw_text(
                     frame, 
-                    "CORRECT: " + str(self.state_tracker['SQUAT_COUNT']), 
+                    "CORRECTO: " + str(self.state_tracker['SQUAT_COUNT']), 
                     pos=(int(frame_width*0.80), 20),
                     text_color=(255, 255, 230),
                     font_scale=0.6,
@@ -217,7 +217,7 @@ class ProcessFrame:
 
                 draw_text(
                     frame, 
-                    "INCORRECT: " + str(self.state_tracker['IMPROPER_SQUAT']), 
+                    "INCORRECTO: " + str(self.state_tracker['IMPROPER_SQUAT']), 
                     pos=(int(frame_width*0.80), 60),
                     text_color=(255, 255, 230),
                     font_scale=0.6,
@@ -228,7 +228,7 @@ class ProcessFrame:
                 
                 draw_text(
                     frame, 
-                    'CAMERA NOT ALIGNED PROPERLY!!!', 
+                    'CAMARA NO ALINEADA CORRECTAMENTE!!!', 
                     pos=(30, frame_height-60),
                     text_color=(255, 255, 230),
                     font_scale=0.50,
@@ -238,7 +238,7 @@ class ProcessFrame:
                 
                 draw_text(
                     frame, 
-                    'OFFSET ANGLE: '+str(offset_angle), 
+                    'ANGULO COMPENSADO: '+str(offset_angle), 
                     pos=(30, frame_height-30),
                     text_color=(255, 255, 230),
                     font_scale=0.50,
@@ -469,7 +469,7 @@ class ProcessFrame:
                  
                 draw_text(
                     frame, 
-                    "CORRECT: " + str(self.state_tracker['SQUAT_COUNT']), 
+                    "CORRECTO: " + str(self.state_tracker['SQUAT_COUNT']), 
                     pos=(int(frame_width*0.80), 20),
                     text_color=(255, 255, 230),
                     font_scale=0.6,
@@ -479,7 +479,7 @@ class ProcessFrame:
 
                 draw_text(
                     frame, 
-                    "INCORRECT: " + str(self.state_tracker['IMPROPER_SQUAT']), 
+                    "INCORRECTO: " + str(self.state_tracker['IMPROPER_SQUAT']), 
                     pos=(int(frame_width*0.80), 60),
                     text_color=(255, 255, 230),
                     font_scale=0.6,
@@ -515,7 +515,7 @@ class ProcessFrame:
 
             draw_text(
                     frame, 
-                    "CORRECT: " + str(self.state_tracker['SQUAT_COUNT']), 
+                    "CORRECTO: " + str(self.state_tracker['SQUAT_COUNT']), 
                     pos=(int(frame_width*0.80), 20),
                     text_color=(255, 255, 230),
                     font_scale=0.6,
@@ -525,7 +525,7 @@ class ProcessFrame:
 
             draw_text(
                     frame, 
-                    "INCORRECT: " + str(self.state_tracker['IMPROPER_SQUAT']), 
+                    "INCORRECTO: " + str(self.state_tracker['IMPROPER_SQUAT']), 
                     pos=(int(frame_width*0.80), 60),
                     text_color=(255, 255, 230),
                     font_scale=0.6,
