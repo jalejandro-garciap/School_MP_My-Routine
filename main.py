@@ -268,6 +268,13 @@ def main():
     cardmonitor = CardMonitor()
     cardmonitor.addObserver(cardobserver)
 
+    # Configuración del sensor Hall
+    count = 0
+    HallSensorGPIO = 3
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(HallSensorGPIO, GPIO.IN)
+    flag = False
+
     try:
         cap = cv2.VideoCapture(0) # Inicializa la cámara
     except Exception as e:
@@ -401,12 +408,7 @@ def main():
 
                     
                     elif(chosen_action == "spinning_target"):
-
-                        count = 0
-                        HallSensorGPIO = 3 # PIN
-                        GPIO.setmode(GPIO.BOARD)
-                        GPIO.setup(HallSensorGPIO, GPIO.IN)
-                        flag = False
+                        
                         while count >= rpm_target:
                             step = GPIO.input(HallSensorGPIO)
                             if(step == 0):
@@ -419,6 +421,7 @@ def main():
                                     flag = False
 
                         print("¡Límite de vueltas alcanzado!")
+                        break
 
                 cv2.imshow('frame', frame)
 
