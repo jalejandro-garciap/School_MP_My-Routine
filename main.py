@@ -253,6 +253,11 @@ def main():
 
     age_net, gender_net, face_cascade = load_models()
 
+    thresholds = get_thresholds_beginner()
+    processor = ProcessFrame(thresholds)
+    mp_pose = mp.solutions.pose
+    pose = mp_pose.Pose(static_image_mode=False, model_complexity=2, smooth_landmarks=True, min_detection_confidence=0.5, min_tracking_confidence=0.5)
+
     mp_hands = mp.solutions.hands
     with mp_hands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5) as hands:
         while True:
@@ -323,8 +328,6 @@ def main():
                 # Estado: CHOOSING
                 elif state == CHOOSING:
 
-                    #draw_text(frame, "Escoge: <- Bicicleta | Ejercicio ->", 8, font=cv2.FONT_HERSHEY_SIMPLEX, pos=(middle_x, bottom_y), font_scale=0.7, font_thickness=2, text_color=(255, 255, 255), text_color_bg=(255, 150, 0))
-
                     image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     results = hands.process(image)
                     
@@ -353,29 +356,18 @@ def main():
 
                     if(chosen_action == "assigned_exercises"):
 
-                        mp_pose = mp.solutions.pose
-                        pose = mp_pose.Pose(static_image_mode=False, model_complexity=1, smooth_landmarks=True)
+                        # Procesa el frame actual
+                        processed_frame, feedback = processor.process(frame, pose)  # Asegúrate de que 'process' sea el método correcto en tu clase 'ProcessFrame'
 
-                        # Configura los umbrales según el nivel de habilidad
-                        thresholds = get_thresholds_pro() if is_pro else get_thresholds_beginner()
-                        
-                        # Crea una instancia de la clase ProcessFrame
-                        processor = ProcessFrame(thresholds)
+                        # Agrega lógica de visualización o salida según sea necesario, por ejemplo:
+                        # Dibuja la retroalimentación en el frame procesado
+                        draw_text(processed_frame, feedback)
 
-                        # Crea una instancia de la clase ProcessFrame
-                        processor = ProcessFrame(thresholds)
-                        # Procesa el frame y obtén retroalimentación
-                        frame, feedback = processor.process(frame, pose)
-
-                        if processor.squat_count >= exercise_goal:
+                        # Si se alcanza el objetivo de ejercicio, puedes romper el bucle o dar una señal al usuario
+                        if processor.squat_count >= exercise_goal:  # Reemplaza squat_count con el método o atributo real
                             print("¡Límite de sentadillas alcanzado!")
+                            # Aquí podrías romper el bucle, mostrar una pantalla de felicitación, etc.
                             break
-
-                        # Muestra la retroalimentación en el frame
-                        draw_text(frame, feedback)
-                    
-                    #if chosen_action:
-                        #cv2.putText(frame, f"Accion Elegida: {chosen_action}", (middle_x, margin_y), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 0, 0), 1)
 
                 cv2.imshow('frame', frame)
 
