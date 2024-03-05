@@ -1,5 +1,3 @@
-
-
 # Get thresholds for beginner mode
 def get_thresholds_beginner():
 
@@ -9,6 +7,10 @@ def get_thresholds_beginner():
                             'PASS'   : (70, 95)
                            }    
 
+    _ANGLE_ARM_EXTENSION = {
+                            'MIN': 160,  # Minimum angle to consider an arm extended
+                            'MAX': 30    # Maximum angle to consider a push-up at the lowest position
+                           }
         
     thresholds = {
                     'HIP_KNEE_VERT': _ANGLE_HIP_KNEE_VERT,
@@ -20,13 +22,12 @@ def get_thresholds_beginner():
                     'OFFSET_THRESH'    : 35.0,
                     'INACTIVE_THRESH'  : 15.0,
 
-                    'CNT_FRAME_THRESH' : 50
-                            
+                    'CNT_FRAME_THRESH' : 50,
+                    
+                    'ARM_EXTENSION': _ANGLE_ARM_EXTENSION
                 }
 
     return thresholds
-
-
 
 # Get thresholds for beginner mode
 def get_thresholds_pro():
@@ -37,7 +38,11 @@ def get_thresholds_pro():
                             'PASS'   : (80, 95)
                            }    
 
-        
+    _ANGLE_ARM_EXTENSION = {
+                            'MIN': 165,  # Minimum angle for a stricter extended arm
+                            'MAX': 25    # Strictest maximum angle for the low position of the push-up
+                           }
+
     thresholds = {
                     'HIP_KNEE_VERT': _ANGLE_HIP_KNEE_VERT,
 
@@ -48,8 +53,9 @@ def get_thresholds_pro():
                     'OFFSET_THRESH'    : 35.0,
                     'INACTIVE_THRESH'  : 15.0,
 
-                    'CNT_FRAME_THRESH' : 50
-                            
+                    'CNT_FRAME_THRESH' : 50,
+                    
+                    'ARM_EXTENSION': _ANGLE_ARM_EXTENSION
                  }
                  
     return thresholds
