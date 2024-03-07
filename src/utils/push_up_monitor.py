@@ -1,4 +1,3 @@
-import time
 import cv2
 import numpy as np
 from utils.landmarks_detector import LandmarksDetector

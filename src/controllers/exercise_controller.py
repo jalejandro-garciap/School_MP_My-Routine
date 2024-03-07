@@ -16,6 +16,8 @@ class ExerciseController:
 
     def __init__(self):  
 
+        self.rep_count = 0
+
         self.squat_monitor = SquatMonitor()
         self.push_up_monitor = PushUpMonitor()
         self.detector = LandmarksDetector()
@@ -23,6 +25,9 @@ class ExerciseController:
         self.exercise_started = False
         self.exercise_done = False
         self.selected_exercise = False
+        
+        self.show_result = False
+
         self.hands = []
 
     def get_mode(self, array):
@@ -76,12 +81,15 @@ class ExerciseController:
     
     def run(self, frame, exercise):        
         if exercise.type == self.EXERCISE_LIST[0]: # Squats
+            self.rep_count = self.squat_monitor.count
             if self.squat_monitor.count < exercise.target_reps:
                 self.squat_monitor.process(frame)
+                
             else:
                 self.exercise_done = True
 
         elif exercise.type == self.EXERCISE_LIST[1]: # Push ups
+            self.rep_count = self.push_up_monitor.count
             if self.push_up_monitor.count < exercise.target_reps:
                 self.push_up_monitor.process(frame)
             else:
