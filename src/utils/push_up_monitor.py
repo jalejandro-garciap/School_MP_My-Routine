@@ -1,93 +1,80 @@
 import time
 import cv2
 import numpy as np
-from utils.ui_utils import draw_text, draw_dotted_line
+from utils.landmarks_detector import LandmarksDetector
+from utils.ui_utils import draw_text
 
 class PushUpMonitor:
+    def __init__(self):
+        # Counter
+        self.count = 0
+        # Started the Push up
+        self.start = False
+
+        self.detector = LandmarksDetector()
+
+    def calculate_distance(self, p1, p2):
+        return ((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) ** 0.5
+
+    def process(self, frame: np.array):
+        frame_height, frame_width, _ = frame.shape
+        image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        image_height, image_width, _ = image.shape
+        pose_landmarks = self.detector.detect_pose_landmarks(image)        
+
+        if pose_landmarks:
+            ps_lm = pose_landmarks.landmark
+
+            nose = (int(ps_lm[0].x*image_width), int(ps_lm[0].y*image_height))
+            left_wrist = (int(ps_lm[15].x*image_width), int(ps_lm[15].y*image_height))
+            right_wrist = (int(ps_lm[16].x*image_width), int(ps_lm[16].y*image_height))
+            left_shoulder = (int(ps_lm[11].x*image_width), int(ps_lm[11].y*image_height))
+            right_shoulder = (int(ps_lm[12].x*image_width), int(ps_lm[12].y*image_height))
+            left_hip = (int(ps_lm[23].x*image_width), int(ps_lm[23].y*image_height)) 
+            right_hip = (int(ps_lm[24].x*image_width), int(ps_lm[24].y*image_height))
+            left_heel = (int(ps_lm[29].x*image_width), int(ps_lm[29].y*image_height))
+            right_heel = (int(ps_lm[30].x*image_width), int(ps_lm[30].y*image_height))
+
+            # Draw ing body parts on the image
+
+            cv2.circle(frame, nose, 8, (255, 0, 0), -1)
+            cv2.circle(frame, left_wrist, 8, (225, 105, 65), -1)
+            cv2.circle(frame, right_wrist, 8, (250, 206, 135), -1)
+            cv2.circle(frame, left_shoulder, 8, (230, 250, 0), -1)
+            cv2.circle(frame, right_shoulder, 8, (212, 250, 127), -1)
+            cv2.circle(frame, left_hip, 8, (0, 128, 0), -1)
+            cv2.circle(frame, right_hip, 8, (144, 238, 144), -1)
+            cv2.circle(frame, left_heel, 8, (0, 255, 255), -1)
+            cv2.circle(frame, right_heel, 8, (224, 255, 255), -1)
+
+            midpoint = ((left_shoulder[0] + right_shoulder[0]) // 2, (left_shoulder[1] + right_shoulder[1]) // 2)
+
+            cv2.line(frame, nose, midpoint, (255, 255, 255), 4, cv2.LINE_AA)
+            cv2.line(frame, left_shoulder, right_shoulder, (255, 255, 255), 4, cv2.LINE_AA)
+            cv2.line(frame, left_shoulder, left_wrist, (255, 255, 255), 4, cv2.LINE_AA)
+            cv2.line(frame, right_shoulder, right_wrist, (255, 255, 255), 4, cv2.LINE_AA)
+            cv2.line(frame, left_shoulder, left_hip, (255, 255, 255), 4, cv2.LINE_AA)
+            cv2.line(frame, right_shoulder, right_hip, (255, 255, 255), 4, cv2.LINE_AA)
+            cv2.line(frame, right_hip, left_hip, (255, 255, 255), 4, cv2.LINE_AA)
+            cv2.line(frame, left_hip, left_heel, (255, 255, 255), 4, cv2.LINE_AA)
+            cv2.line(frame, right_hip, right_heel, (255, 255, 255), 4, cv2.LINE_AA)
+
+            # Validate push up
+
+            if self.calculate_distance(right_shoulder,right_wrist) < 60: 
+                self.start = True
+            elif self.start and self.calculate_distance(right_shoulder,right_wrist) > 90:
+                self.count += 1
+                self.start = False
     
-    def __init__(self, thresholds, flip_frame = False):        
-        # Counters
-        self.push_up_count  = 0
-        self.push_up_count_bad  = 0
-        #Set if frame should be flipped or not.
-        self.flip_frame = flip_frame
-        # Font type.
-        self.font = cv2.FONT_HERSHEY_SIMPLEX
-        # line type
-        self.linetype = cv2.LINE_AA
-        # set radius to draw arc
-        self.radius = 20
-        #  Activity time
-        self.last_activity_time = time.time()
-
-    def _update_push_up_counters_and_activity(self, angle_left, angle_right):
-        if angle_left > self.thresholds['ARM_EXTENSION']['MIN'] and angle_right > self.thresholds['ARM_EXTENSION']['MIN']:
-            self.push_up_count += 1
-        else:
-            self.push_up_count_bad += 1
-        self.last_activity_time = time.time()
-
-    def check_inactivity(self, frame):
-        if time.time() - self.last_activity_time > self.thresholds['INACTIVE_THRESH']:
-            self.push_up_count_good = 0
-            self.push_up_count_bad = 0
-            draw_text(frame, 'Resetting due to inactivity', (30, 100), self.font, 0.7, (0, 0, 255), 2, self.linetype)
-        
-    def calculate_angle(self, p1, p2, p3):
-        ba = p1 - p2
-        bc = p3 - p2
-        cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
-        angle = np.arccos(cosine_angle)
-        return np.degrees(angle)
-
-    def process(self, frame: np.array, pose):
-        frame_width, _ = frame.shape
-        
-        # Process the image.
-        keypoints = pose.process(frame)
-
-        if keypoints:
-            
-            left_shoulder, left_elbow, left_wrist = keypoints['left_shoulder'], keypoints['left_elbow'], keypoints['left_wrist']
-            right_shoulder, right_elbow, right_wrist = keypoints['right_shoulder'], keypoints['right_elbow'], keypoints['right_wrist']
-
-            # Calculate the angle of the left and right arm
-            angle_left = self.calculate_angle(left_shoulder, left_elbow, left_wrist)
-            angle_right = self.calculate_angle(right_shoulder, right_elbow, right_wrist)
-
-            # Update counters and uptime
-            self.update_counters_and_activity(angle_left, angle_right)
-
-            # Draw angles and dotted lines
-            cv2.ellipse(frame, left_elbow, (30, 30), 0, 0, angle_left, (255, 255, 255), 2)  # Blanco para ángulo izquierdo
-            cv2.ellipse(frame, right_elbow, (30, 30), 0, 0, angle_right, (255, 0, 0), 2)   # Azul para ángulo derecho
-            draw_dotted_line(frame, left_elbow, left_shoulder, left_wrist, (255, 255, 255), 1)  # Líneas punteadas para visualización
-
-            # Shows counters for good and bad push-ups
+            # Display the count
             draw_text(
                     frame, 
-                    "CORRECT: " + str(self.push_up_count), 
+                    "CORRECT: " + str(self.count), 
                     pos=(int(frame_width*0.80), 20),
                     text_color=(255, 255, 230),
                     font_scale=0.6,
                     text_color_bg=(18, 185, 0)
-                ) 
-            draw_text(
-                    frame, 
-                    "INCORRECT: " + str(self.push_up_count_bad), 
-                    pos=(int(frame_width*0.80), 20),
-                    text_color=(255, 255, 230),
-                    font_scale=0.6,
-                    text_color_bg=(18, 185, 0)
-                )
-
-            # Check inactivity
-            self.check_inactivity(frame)
-
-            if self.flip_frame:
-                frame = cv2.flip(frame, 1)
-
-        else:
-            self.check_inactivity(frame)
+            )
 
         return frame

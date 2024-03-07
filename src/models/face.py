@@ -4,4 +4,4 @@ class Face:
         self.eyes = eyes
 
     def __str__(self):
-        return f"Face: faces = {self.faces}, eyes = {self.eyes}"
+        return f"Face: face = {self.face}, eyes = {self.eyes}"

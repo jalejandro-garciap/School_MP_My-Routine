@@ -1,3 +1,4 @@
+import statistics
 import cv2
 import numpy
 import math
@@ -10,7 +11,7 @@ class BodyController:
     GENDER_LIST = ['Man', 'Woman']
 
     def __init__(self):  
-        self.age_model = "src/data/models/age_deploy.prototxt"
+        self.age_model_path = "src/data/models/age_deploy.prototxt"
         self.gender_model_path = "src/data/models/gender_deploy.prototxt"
         
         self.age_weights_path = "src/data/models/age_net.caffemodel"        
@@ -20,11 +21,19 @@ class BodyController:
         self.gender_net = cv2.dnn.readNet(self.gender_model_path, self.gender_weights_path)
 
         self.detector = LandmarksDetector()
+        self.captured_body = False
+        self.bodies = []
 
-    def euclidean_distance(x1, y1, x2, y2):
+    def get_mode(self, array):
+        try:
+            return statistics.mode(array)
+        except statistics.StatisticsError:
+            return None
+
+    def euclidean_distance(self, x1, y1, x2, y2):
         return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
     
-    def calculate_distance_between_eyes(eyes):
+    def calculate_distance_between_eyes(self, eyes):
         if len(eyes) == 2:
             center_left_eye = (eyes[0][0] + eyes[0][2] // 2, eyes[0][1] + eyes[0][3] // 2)
             center_right_eye = (eyes[1][0] + eyes[1][2] // 2, eyes[1][1] + eyes[1][3] // 2)
@@ -36,84 +45,104 @@ class BodyController:
         else:
             return None
 
-    def detect_body(self, image):
-        pose_landmarks = self.detector.get_pose_landmarks(image)
+    def detect_body(self, frame):
+        image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        pose_landmarks = self.detector.detect_pose_landmarks(image)
 
         if pose_landmarks:
             landmarks = pose_landmarks.landmark
+            self.detector.mp_drawing.draw_landmarks(
+                frame, pose_landmarks, self.detector.mp_solutions.pose.POSE_CONNECTIONS)
 
-            left_shoulder = [landmarks[self.detector.mp_pose.LEFT_SHOULDER.value].x,
-                            landmarks[self.detector.mp_pose.LEFT_SHOULDER.value].y]
-            right_shoulder = [landmarks[self.detector.mp_pose.RIGHT_SHOULDER.value].x,
-                            landmarks[self.detector.mp_pose.RIGHT_SHOULDER.value].y]
-            left_hip = [landmarks[self.detector.mp_pose.LEFT_HIP.value].x,
-                        landmarks[self.detector.mp_pose.LEFT_HIP.value].y]
-            right_hip = [landmarks[self.detector.mp_pose.RIGHT_HIP.value].x,
-                        landmarks[self.detector.mp_pose.RIGHT_HIP.value].y]
+            try:
+                left_shoulder = [landmarks[self.detector.mp_pose.LEFT_SHOULDER.value].x,
+                                landmarks[self.detector.mp_pose.LEFT_SHOULDER.value].y]
+                right_shoulder = [landmarks[self.detector.mp_pose.RIGHT_SHOULDER.value].x,
+                                landmarks[self.detector.mp_pose.RIGHT_SHOULDER.value].y]
+                left_hip = [landmarks[self.detector.mp_pose.LEFT_HIP.value].x,
+                            landmarks[self.detector.mp_pose.LEFT_HIP.value].y]
+                right_hip = [landmarks[self.detector.mp_pose.RIGHT_HIP.value].x,
+                            landmarks[self.detector.mp_pose.RIGHT_HIP.value].y]
+            except IndexError:
+                #print("Unable to calculate dimensions due to detection issues.")
+                return None
 
             shoulder_distance = self.euclidean_distance(*left_shoulder, *right_shoulder)
             waist_distance = self.euclidean_distance(*left_hip, *right_hip)
 
             if waist_distance == 0:
-                return None, "Unable to calculate complexion due to detection issues."
+                #print("Unable to calculate complexion due to detection issues.")
+                return None
 
             ratio = shoulder_distance / waist_distance
             return ratio
         else:
-            return None, "No pose landmarks detected."
+            #print("No pose landmarks detected.")
+            return None
         
-    def detect_hand_gesture(self, image):
-        hand_landmarks = self.detector.detect_hand_landmarks(image)
+    def detect_hand_gesture(self, frame):
+        image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        hands_landmarks = self.detector.detect_hand_landmarks(image)
 
-        if hand_landmarks:
-            landmarks = hand_landmarks.landmark
+        if hands_landmarks:
+            for hand_landmarks in hands_landmarks: 
 
-            index_tip = [landmarks[self.detector.mp_hands.INDEX_FINGER_TIP].x,
-                        landmarks[self.detector.mp_hands.INDEX_FINGER_TIP].y]
-            index_mcp = [landmarks[self.detector.mp_hands.INDEX_FINGER_MCP].x,
-                        landmarks[self.detector.mp_hands.INDEX_FINGER_MCP].y]
-            middle_mcp = [landmarks[self.detector.mp_hands.MIDDLE_FINGER_MCP].x,
-                        landmarks[self.detector.mp_hands.MIDDLE_FINGER_MCP].y]
-            ring_mcp = [landmarks[self.detector.mp_hands.RING_FINGER_MCP].x,
-                        landmarks[self.detector.mp_hands.RING_FINGER_MCP].y]
-            pinky_mcp = [landmarks[self.detector.mp_hands.PINKY_MCP].x,
-                        landmarks[self.detector.mp_hands.PINKY_MCP].y]
-            wrist =     [landmarks[self.detector.mp_hands.WRIST].x,
-                        landmarks[self.detector.mp_hands.WRIST].y]
+                landmarks = hand_landmarks.landmark
+                self.detector.mp_drawing.draw_landmarks(
+                    frame, hand_landmarks, self.detector.mp_solutions.hands.HAND_CONNECTIONS)
 
-            if (index_tip[1] < index_mcp[1] and middle_mcp[1] < ring_mcp[1] < pinky_mcp[1]):
-                if index_tip[0] < wrist[0]:
-                    return "left"
-                elif index_tip[0] > wrist[0]:
-                    return "right"
+                try:
+                    index_tip = landmarks[self.detector.mp_hands.INDEX_FINGER_TIP.value]
+                    index_mcp = landmarks[self.detector.mp_hands.INDEX_FINGER_MCP.value]
+                    middle_mcp = landmarks[self.detector.mp_hands.MIDDLE_FINGER_MCP.value]
+                    ring_mcp = landmarks[self.detector.mp_hands.RING_FINGER_MCP.value]
+                    pinky_mcp = landmarks[self.detector.mp_hands.PINKY_MCP.value]
+                    wrist = landmarks[self.detector.mp_hands.WRIST.value]
+                except IndexError:
+                    #print("Incomplete hand landmarks detected.")
+                    return None
+
+                if (index_tip.y < index_mcp.y and middle_mcp.y < ring_mcp.y < pinky_mcp.y):
+                    if index_tip.x < wrist.x:
+                        return "left"
+                    elif index_tip.x > wrist.x:
+                        return "right"
         else:
-            return None, "No hands landmarks detected."
+            #print("No hand landmarks detected.")
+            return None
 
-    def analyze_body(self, frame, face, ratio):
+    def analyze_body(self, frame, faces):
         
-        x, y, w, h = face.face
-        face_blob = cv2.dnn.blobFromImage(frame[y:y+h, x:x+w], 1.0, (227, 227), (78.4263377603, 87.7689143744, 114.895847746), swapRB=False)
+        ages, genders, heights, complexions = [], [], [], []
+
+        for face in faces:
+            x, y, w, h = face.face[0]
+            face_blob = cv2.dnn.blobFromImage(frame[y:y+h, x:x+w], 1.0, (227, 227), (78.4263377603, 87.7689143744, 114.895847746), swapRB=False)
         
-        self.gender_net.setInput(face_blob)
-        gender_preds = self.gender_net.forward()
-        gender = self.GENDER_LIST[gender_preds[0].argmax()]
-        
-        self.age_net.setInput(face_blob)
-        age_preds = self.age_net.forward()
-        age = self.AGE_LIST[age_preds[0].argmax()]
+            self.gender_net.setInput(face_blob)
+            gender_preds = self.gender_net.forward()
+            genders.append(self.GENDER_LIST[gender_preds[0].argmax()])
+            
+            self.age_net.setInput(face_blob)
+            age_preds = self.age_net.forward()
+            ages.append(self.AGE_LIST[age_preds[0].argmax()])
+            
+            distance_between_eyes = self.calculate_distance_between_eyes(face.eyes)
+            if distance_between_eyes is not None:
+                distance_in_cm = distance_between_eyes * 0.01 # Adjust this value based on the pixel-to-centimeter distance ratio.
+                heights.append(distance_in_cm * 1.5) # Adjust this value based on the relationship between distance in centimeters and height.
 
-        distance_between_eyes = self.calculate_distance_between_eyes(face.eyes)
-        if distance_between_eyes is not None:
-            distance_in_cm = face.distance_between_eyes * 0.01 # Adjust this value based on the pixel-to-centimeter distance ratio.
-            height = distance_in_cm * 1.5 # Adjust this value based on the relationship between distance in centimeters and height.
-        else:
-            height = None
+        for ratio in self.bodies:
+            if ratio < 1.45:
+                complexions.append("Endomorph")
+            elif ratio > 1.85:
+                complexions.append("Ectomorph")
+            else:
+                complexions.append("Mesomorph")
 
-        if ratio < 1.45:
-            complexion = "Endomorph"
-        elif ratio > 1.85:
-            complexion = "Ectomorph"
-        else:
-            complexion = "Mesomorph"
-
-        return Body(age=age, gender=gender, height=height, complexion=complexion)
+        return Body(
+            age = self.get_mode(ages),
+            gender = self.get_mode(genders),
+            height = self.get_mode(heights),
+            complexion = self.get_mode(complexions)
+        )

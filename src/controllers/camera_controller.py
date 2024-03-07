@@ -13,13 +13,13 @@ class CameraController:
             if not self.cap.isOpened():
                 raise Exception("Camera could not be initialized.")
         except Exception as e:
-            print(f"Camera initialization error: {e}")
+            #print(f"Camera initialization error: {e}")
             exit()
 
     def capture_frame(self):
         ret, frame = self.cap.read()
         if not ret:
-            print("The image could not be captured")
+            #print("The image could not be captured")
             return None
         return cv2.flip(frame, 1)
 

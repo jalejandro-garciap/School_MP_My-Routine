@@ -6,4 +6,4 @@ class Body:
         self.complexion = complexion  # Results: Endomorph, Mesomorph, Ectomorph
 
     def __str__(self):
-        return f"Body: age = {self.age}, gender = {self.gender}, height = {self.height} cm, complexion = {self.complexion}"
+        return f"Body: age = {self.age}, gender = {self.gender}, height = {self.height}m, complexion = {self.complexion}"

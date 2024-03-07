@@ -1,4 +1,9 @@
+import statistics
 from models.exercise import Exercise
+from utils.landmarks_detector import LandmarksDetector
+from utils.squat_monitor import SquatMonitor
+from utils.push_up_monitor import PushUpMonitor
+from utils.squat_monitor import SquatMonitor
 
 class ExerciseController:
 
@@ -8,6 +13,30 @@ class ExerciseController:
     'Squats': 10,
     'Push ups': 5
     }
+
+    def __init__(self):  
+
+        self.squat_monitor = SquatMonitor()
+        self.push_up_monitor = PushUpMonitor()
+        self.detector = LandmarksDetector()
+
+        self.exercise_started = False
+        self.exercise_done = False
+        self.selected_exercise = False
+        self.hands = []
+
+    def get_mode(self, array):
+        try:
+            return statistics.mode(array)
+        except statistics.StatisticsError:
+            return None
+
+    def analyze_selected_option(self):
+        option = self.get_mode(self.hands)
+        if option == "left":
+            return self.EXERCISE_LIST[0] # Squats
+        elif option == "right":
+            return self.EXERCISE_LIST[1] # Push ups
 
     def assign_exercises(self, body, type):
         
@@ -45,3 +74,15 @@ class ExerciseController:
         target_reps = int(base_reps * reps_modifier * gender_modifier * complexion_modifier)
         return Exercise(type=type, target_reps=target_reps, is_pro=is_pro)
     
+    def run(self, frame, exercise):        
+        if exercise.type == self.EXERCISE_LIST[0]: # Squats
+            if self.squat_monitor.count < exercise.target_reps:
+                self.squat_monitor.process(frame)
+            else:
+                self.exercise_done = True
+
+        elif exercise.type == self.EXERCISE_LIST[1]: # Push ups
+            if self.push_up_monitor.count < exercise.target_reps:
+                self.push_up_monitor.process(frame)
+            else:
+                self.exercise_done = True
