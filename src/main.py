@@ -10,10 +10,10 @@ from utils.ui_utils import draw_text
 
 STATION_NAME = "CUCEI"
 
-def show_status(frame, msg):
+def show_status(frame, msg, minus):
     frame_height, frame_width = frame.shape[0], frame.shape[1]
     text_width = cv2.getTextSize(msg, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 1)[0][0]
-    pos_msg_h = frame_height - 35
+    pos_msg_h = frame_height - minus
     pos_msg_w = (frame_width - text_width) // 2            
     draw_text(frame, msg, pos=(pos_msg_w, pos_msg_h), font_scale=0.7, text_color=(255, 255, 230), text_color_bg=(255, 191, 0))
 
@@ -23,7 +23,7 @@ def show_results(frame, successful):
     color = (18, 185, 0) if successful else (10, 0, 255)
 
     if successful:
-        show_status(frame, "Enjoy your free trip")
+        show_status(frame, "Enjoy your free trip", 35)
 
     frame_height, frame_width = frame.shape[0], frame.shape[1]
     text_width = cv2.getTextSize(msg, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 1)[0][0]
@@ -40,16 +40,23 @@ def main():
 
     station = get_station_by_name(STATION_NAME)
 
-    camera = CameraController()
+    camera = CameraController(1)
     timer = Timer()
     
     timer.start()
     rfid_controller.start_reading()
 
+
     while True:
         frame = camera.capture_frame()
         if frame is None:
             continue
+        cv2.namedWindow('Camera', cv2.WINDOW_NORMAL)
+        cv2.resizeWindow('Camera', 832, 624)
+        #frame_height, frame_width = frame.shape[0], frame.shape[1]
+        
+        #print("window_width: " + str(frame_width))
+        #print("window_height: " + str(frame_height))
 
         # 1. Waiting for the entry of an RFID card
 
@@ -67,7 +74,7 @@ def main():
         if not face_controller.captured_face and rfid_controller.scanned_card:
             face = face_controller.detect_face(frame)        
 
-            show_status(frame,"Face Analysis")
+            show_status(frame,"Face Analysis", 35)
 
             if face is not None:                
                 if not timer.has_elapsed(5):
@@ -87,7 +94,7 @@ def main():
         if not body_controller.captured_body and face_controller.captured_face:
             body = body_controller.detect_body(frame)
             
-            show_status(frame,"Body Analysis")            
+            show_status(frame,"Body Analysis", 35)            
 
             if body is not None:         
                 if not timer.has_elapsed(5):
@@ -107,11 +114,20 @@ def main():
         if not exercise_controller.selected_exercise and body_controller.captured_body:
             hand = body_controller.detect_hand_gesture(frame)
 
-            show_status(frame,"Select with your hands")            
+            show_status(frame,"Select with your hands", 35) 
+            frame_height, frame_width = frame.shape[0], frame.shape[1]
+            pos_msg_h = frame_height // 2
+            pos_msg_w_1 = 25   
+            msg = "Sentadillas"        
+            draw_text(frame, msg, pos=(pos_msg_w_1, pos_msg_h), font_scale=0.7, text_color=(255, 255, 230), text_color_bg=(255, 191, 0))   
+            msg = "Lagartijas"
+            text_width = cv2.getTextSize(msg, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 1)[0][0]   
+            pos_msg_w_2 = frame_width - text_width      
+            draw_text(frame, msg, pos=(pos_msg_w_2, pos_msg_h), font_scale=0.7, text_color=(255, 255, 230), text_color_bg=(255, 191, 0))          
 
             if hand is not None:
-                if not timer.has_elapsed(5):
-                    msg = f"Wait { 5 - timer.elapsed_time() } seconds"
+                if not timer.has_elapsed(3):
+                    msg = f"Wait { 3 - timer.elapsed_time() } seconds"
                     draw_text(frame, msg, pos=(25, 25), font_scale=0.7, text_color=(255, 255, 230), text_color_bg=(18, 185, 0))
                     exercise_controller.hands.append(hand)
                 else:
@@ -141,7 +157,7 @@ def main():
             
             if not timer.has_elapsed(60): # Start counting time for each exercise: 1 minute max
                 
-                show_status(frame,exercise.type)  
+                show_status(frame,exercise.type,35)  
 
                 msg = f"Time to finish: { 60 - timer.elapsed_time() }"
                 draw_text(frame, msg, pos=(25, 25), font_scale=0.7, text_color=(255, 255, 230), text_color_bg=(18, 185, 0))
