@@ -66,14 +66,14 @@ class PushUpMonitor:
                 self.count += 1
                 self.start = False
     
-            # Display the count
-            draw_text(
-                    frame, 
-                    "CORRECT: " + str(self.count), 
-                    pos=(int(frame_width*0.80), 20),
-                    text_color=(255, 255, 230),
-                    font_scale=0.6,
-                    text_color_bg=(18, 185, 0)
-            )
+        # Display the count
+        draw_text(
+                frame, 
+                "CORRECTO: " + str(self.count), 
+                pos=(int(frame_width*0.90), 20),
+                text_color=(255, 255, 230),
+                font_scale=0.8,
+                text_color_bg=(18, 185, 0)
+        )
 
         return frame

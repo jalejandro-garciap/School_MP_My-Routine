@@ -2,9 +2,11 @@ import cv2
 
 class CameraController:
 
-    def __init__(self, camera_number=0):
+    def __init__(self, camera_number=0, width=1920, height=1080):
         self.camera_number = camera_number
         self.cap = None
+        self.width = width
+        self.height = height
         self.initialize_camera()
 
     def initialize_camera(self):
@@ -12,6 +14,11 @@ class CameraController:
             self.cap = cv2.VideoCapture(self.camera_number)
             if not self.cap.isOpened():
                 raise Exception("Camera could not be initialized.")
+            
+            # Set the resolution to HD (1080p)
+            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
+            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
+
         except Exception as e:
             #print(f"Camera initialization error: {e}")
             exit()

@@ -10,8 +10,8 @@ class ExerciseController:
     EXERCISE_LIST = ['Squats', 'Push ups']
 
     EXERCISE_BASE_REPS = {
-    'Squats': 10,
-    'Push ups': 5
+    'Squats': 6,
+    'Push ups': 4
     }
 
     def __init__(self):  

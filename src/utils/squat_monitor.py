@@ -87,13 +87,6 @@ class SquatMonitor:
             'IMPROPER_SQUAT':0
             
         }
-        
-        self.FEEDBACK_ID_MAP = {
-            0: ('BEND BACKWARDS', 215, (0, 153, 255)),
-            1: ('BEND FORWARD', 215, (0, 153, 255)),
-            2: ('KNEE FALLING OVER TOE', 170, (255, 80, 80)),
-            3: ('SQUAT TOO DEEP', 125, (255, 80, 80))
-        }
 
     def _get_state(self, knee_angle):
         
@@ -125,7 +118,7 @@ class SquatMonitor:
         if lower_hips_disp:
             draw_text(
                     frame, 
-                    'LOWER YOUR HIPS', 
+                    'BAJA TUS CADERAS', 
                     pos=(30, 80),
                     text_color=(0, 0, 0),
                     font_scale=0.6,
@@ -229,37 +222,37 @@ class SquatMonitor:
 
                 draw_text(
                     frame, 
-                    "CORRECT: " + str(self.state_tracker['SQUAT_COUNT']), 
-                    pos=(int(frame_width*0.80), 20),
+                    "CORRECTO: " + str(self.state_tracker['SQUAT_COUNT']), 
+                    pos=(int(frame_width*0.90), 20),
                     text_color=(255, 255, 230),
-                    font_scale=0.6,
+                    font_scale=0.8,
                     text_color_bg=(18, 185, 0)
                 )  
                 
                 draw_text(
                     frame, 
-                    "INCORRECT: " + str(self.state_tracker['IMPROPER_SQUAT']), 
-                    pos=(int(frame_width*0.80), 60),
+                    "INCORRECTO: " + str(self.state_tracker['IMPROPER_SQUAT']), 
+                    pos=(int(frame_width*0.90), 70),
                     text_color=(255, 255, 230),
-                    font_scale=0.6,
+                    font_scale=0.8,
                     text_color_bg=(221, 0, 0),
                 )  
                 
                 draw_text(
                     frame, 
-                    'CAMERA NOT ALIGNED CORRECTLY!!!', 
-                    pos=(30, frame_height-60),
+                    'CAMARA NO ALINEADA CORRECTAMENTE!!', 
+                    pos=(30, frame_height-70),
                     text_color=(255, 255, 230),
-                    font_scale=0.50,
+                    font_scale=0.70,
                     text_color_bg=(255, 153, 0),
                 ) 
                 
                 draw_text(
                     frame, 
-                    'ANGLE COMPENSATED: '+str(offset_angle), 
+                    'ANGULO COMPENSADO: '+str(offset_angle), 
                     pos=(30, frame_height-30),
                     text_color=(255, 255, 230),
-                    font_scale=0.50,
+                    font_scale=0.70,
                     text_color_bg=(255, 153, 0),
                 ) 
 
@@ -466,8 +459,6 @@ class SquatMonitor:
 
                 self.state_tracker['COUNT_FRAMES'][self.state_tracker['DISPLAY_TEXT']]+=1
 
-                frame = self._show_feedback(frame, self.state_tracker['COUNT_FRAMES'], self.FEEDBACK_ID_MAP, self.state_tracker['LOWER_HIPS'])
-
 
                 if display_inactivity:
                     # cv2.putText(frame, 'Resetting COUNTERS due to inactivity!!!', (10, frame_height - 20), self.font, 0.5, self.COLORS['blue'], 2, lineType=self.linetype)
@@ -482,19 +473,19 @@ class SquatMonitor:
 
                 draw_text(
                     frame, 
-                    "CORRECT: " + str(self.state_tracker['SQUAT_COUNT']), 
-                    pos=(int(frame_width*0.80), 20),
+                    "CORRECTO: " + str(self.state_tracker['SQUAT_COUNT']), 
+                    pos=(int(frame_width*0.90), 20),
                     text_color=(255, 255, 230),
-                    font_scale=0.6,
+                    font_scale=0.8,
                     text_color_bg=(18, 185, 0)
                 )  
                 
                 draw_text(
                     frame, 
-                    "INCORRECT: " + str(self.state_tracker['IMPROPER_SQUAT']), 
-                    pos=(int(frame_width*0.80), 60),
+                    "INCORRECTO: " + str(self.state_tracker['IMPROPER_SQUAT']), 
+                    pos=(int(frame_width*0.90), 70),
                     text_color=(255, 255, 230),
-                    font_scale=0.6,
+                    font_scale=0.8,
                     text_color_bg=(221, 0, 0),
                 )               
                 
@@ -522,19 +513,19 @@ class SquatMonitor:
 
             draw_text(
                     frame, 
-                    "CORRECT: " + str(self.state_tracker['SQUAT_COUNT']), 
-                    pos=(int(frame_width*0.80), 20),
+                    "CORRECTO: " + str(self.state_tracker['SQUAT_COUNT']), 
+                    pos=(int(frame_width*0.90), 20),
                     text_color=(255, 255, 230),
-                    font_scale=0.6,
+                    font_scale=0.8,
                     text_color_bg=(18, 185, 0)
                 )  
             
             draw_text(
                     frame, 
-                    "INCORRECT: " + str(self.state_tracker['IMPROPER_SQUAT']), 
-                    pos=(int(frame_width*0.80), 60),
+                    "INCORRECTO: " + str(self.state_tracker['IMPROPER_SQUAT']), 
+                    pos=(int(frame_width*0.90), 70),
                     text_color=(255, 255, 230),
-                    font_scale=0.6,
+                    font_scale=0.8,
                     text_color_bg=(221, 0, 0),
                 )  
 

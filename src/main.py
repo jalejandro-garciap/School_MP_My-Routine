@@ -19,11 +19,11 @@ def show_status(frame, msg, minus):
 
 def show_results(frame, successful):    
 
-    msg = "Congratulations you finished" if successful else "Luck for the next"
+    msg = "FELICIDADES, HAS TERMINADO!" if successful else "SUERTE PARA LA PROXIMA"
     color = (18, 185, 0) if successful else (10, 0, 255)
 
     if successful:
-        show_status(frame, "Enjoy your free trip", 35)
+        show_status(frame, "DISFRUTA TU PASE GRATIS", 35)
 
     frame_height, frame_width = frame.shape[0], frame.shape[1]
     text_width = cv2.getTextSize(msg, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 1)[0][0]
@@ -40,7 +40,7 @@ def main():
 
     station = get_station_by_name(STATION_NAME)
 
-    camera = CameraController(1)
+    camera = CameraController(0)
     timer = Timer()
     
     timer.start()
@@ -51,17 +51,11 @@ def main():
         frame = camera.capture_frame()
         if frame is None:
             continue
-        cv2.namedWindow('Camera', cv2.WINDOW_NORMAL)
-        cv2.resizeWindow('Camera', 832, 624)
-        #frame_height, frame_width = frame.shape[0], frame.shape[1]
         
-        #print("window_width: " + str(frame_width))
-        #print("window_height: " + str(frame_height))
-
         # 1. Waiting for the entry of an RFID card
 
         if not rfid_controller.scanned_card:
-            msg = "Present your card"
+            msg = "PRESENTA TU TARJETA"
             draw_text(frame, msg, pos=(25, 25), font_scale=0.7, text_color=(255, 255, 230), text_color_bg=(18, 185, 0))
             
             if rfid_controller.message is not None:
@@ -74,18 +68,18 @@ def main():
         if not face_controller.captured_face and rfid_controller.scanned_card:
             face = face_controller.detect_face(frame)        
 
-            show_status(frame,"Face Analysis", 35)
+            show_status(frame,"ANALISIS FACIAL", 35)
 
             if face is not None:                
-                if not timer.has_elapsed(5):
-                    msg = f"Wait { 5 - timer.elapsed_time() } seconds"
+                if not timer.has_elapsed(3):
+                    msg = f"ESPERA { 3 - timer.elapsed_time() } SEGUNDOS"
                     draw_text(frame, msg, pos=(25, 25), font_scale=0.7, text_color=(255, 255, 230), text_color_bg=(18, 185, 0))
                     face_controller.faces.append(face)
                 else:
                     face_controller.captured_face = True
                     timer.restart()
             else:
-                msg = "Look at the camera"
+                msg = "MIRA A LA CAMARA"
                 draw_text(frame, msg, pos=(30, 20), font_scale=0.8, text_color=(255, 255, 255), text_color_bg=(10, 0, 255))
                 timer.restart()        
 
@@ -94,18 +88,18 @@ def main():
         if not body_controller.captured_body and face_controller.captured_face:
             body = body_controller.detect_body(frame)
             
-            show_status(frame,"Body Analysis", 35)            
+            show_status(frame,"ANALISIS CORPORAL", 35)            
 
             if body is not None:         
-                if not timer.has_elapsed(5):
-                    msg = f"Wait { 5 - timer.elapsed_time() } seconds"
+                if not timer.has_elapsed(3):
+                    msg = f"ESPERA { 3 - timer.elapsed_time() } SEGUNDOS"
                     draw_text(frame, msg, pos=(25, 25), font_scale=0.7, text_color=(255, 255, 230), text_color_bg=(18, 185, 0))
                     body_controller.bodies.append(body)
                 else:
                     body_controller.captured_body = True
                     timer.restart()
             else:
-                msg = "Get away from the camera"
+                msg = "ALEJATE DE LA CAMARA"
                 draw_text(frame, msg, pos=(30, 20), font_scale=0.8, text_color=(255, 255, 255), text_color_bg=(10, 0, 255))
                 timer.restart()
 
@@ -114,27 +108,27 @@ def main():
         if not exercise_controller.selected_exercise and body_controller.captured_body:
             hand = body_controller.detect_hand_gesture(frame)
 
-            show_status(frame,"Select with your hands", 35) 
+            show_status(frame,"ESCOGE CON TUS MANOS", 35) 
             frame_height, frame_width = frame.shape[0], frame.shape[1]
             pos_msg_h = frame_height // 2
             pos_msg_w_1 = 25   
-            msg = "Sentadillas"        
+            msg = "SENTADILLAS"        
             draw_text(frame, msg, pos=(pos_msg_w_1, pos_msg_h), font_scale=0.7, text_color=(255, 255, 230), text_color_bg=(255, 191, 0))   
-            msg = "Lagartijas"
+            msg = "LAGARTIJAS"
             text_width = cv2.getTextSize(msg, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 1)[0][0]   
             pos_msg_w_2 = frame_width - text_width      
             draw_text(frame, msg, pos=(pos_msg_w_2, pos_msg_h), font_scale=0.7, text_color=(255, 255, 230), text_color_bg=(255, 191, 0))          
 
             if hand is not None:
                 if not timer.has_elapsed(3):
-                    msg = f"Wait { 3 - timer.elapsed_time() } seconds"
+                    msg = f"ESPERA { 3 - timer.elapsed_time() } SEGUNDOS"
                     draw_text(frame, msg, pos=(25, 25), font_scale=0.7, text_color=(255, 255, 230), text_color_bg=(18, 185, 0))
                     exercise_controller.hands.append(hand)
                 else:
                     exercise_controller.selected_exercise = True
                     timer.restart()
             else:
-                msg = "Shows hands on screen"
+                msg = "MUESTRA TU MANO EN PANTALLA"
                 draw_text(frame, msg, pos=(30, 20), font_scale=0.8, text_color=(255, 255, 255), text_color_bg=(10, 0, 255))
                 timer.restart()
 
@@ -157,12 +151,10 @@ def main():
             
             if not timer.has_elapsed(60): # Start counting time for each exercise: 1 minute max
                 
-                show_status(frame,exercise.type,35)  
-
-                msg = f"Time to finish: { 60 - timer.elapsed_time() }"
+                msg = f"TIEMPO RESTANTE: { 60 - timer.elapsed_time() }"
                 draw_text(frame, msg, pos=(25, 25), font_scale=0.7, text_color=(255, 255, 230), text_color_bg=(18, 185, 0))
 
-                msg = f"Target: { exercise.target_reps }"
+                msg = f"OBJETIVO: { exercise.target_reps }"
                 draw_text(frame, msg, pos=(25, 70), font_scale=0.7, text_color=(255, 255, 230), text_color_bg=(18, 185, 0))
 
             else:
@@ -200,7 +192,7 @@ def main():
                 rfid_controller.start_reading()
                 timer.restart()
         
-        cv2.imshow('Camera', frame)        
+        cv2.imshow('Mi rutina', frame)        
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
