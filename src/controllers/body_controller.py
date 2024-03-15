@@ -2,6 +2,7 @@ import statistics
 import cv2
 import numpy
 import math
+import threading
 
 from models.body import Body
 from utils.landmarks_detector import LandmarksDetector
@@ -21,8 +22,13 @@ class BodyController:
         self.gender_net = cv2.dnn.readNet(self.gender_model_path, self.gender_weights_path)
 
         self.detector = LandmarksDetector()
-        self.captured_body = False
+        self.body = Body()
+
         self.bodies = []
+
+        self.captured_body = False
+        self.analysis_started = False
+        self.analysis_finished = False        
 
     def get_mode(self, array):
         try:
@@ -112,7 +118,12 @@ class BodyController:
             return None
 
     def analyze_body(self, frame, faces):
-        
+        self.analysis_started = True
+        analysis_thread = threading.Thread(target=self.analyze_body_async, args=(frame, faces))
+        analysis_thread.start()        
+    
+    def analyze_body_async(self, frame, faces):
+
         ages, genders, heights, complexions = [], [], [], []
 
         for face in faces:
@@ -140,9 +151,11 @@ class BodyController:
             else:
                 complexions.append("Mesomorph")
 
-        return Body(
+        self.body = Body(
             age = self.get_mode(ages),
             gender = self.get_mode(genders),
             height = self.get_mode(heights),
             complexion = self.get_mode(complexions)
         )
+
+        self.analysis_finished = True

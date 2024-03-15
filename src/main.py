@@ -29,7 +29,7 @@ def show_results(frame, successful):
     text_width = cv2.getTextSize(msg, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 1)[0][0]
     pos_msg_h = frame_height // 2
     pos_msg_w = (frame_width - text_width) // 2
-    draw_text(frame, msg, pos=(pos_msg_w, pos_msg_h), font_scale=0.8, text_color=(255, 255, 230), text_color_bg=color)
+    draw_text(frame, msg, pos=(pos_msg_w, pos_msg_h), font_scale=1, text_color=(255, 255, 230), text_color_bg=color)
 
 def main():
 
@@ -136,21 +136,26 @@ def main():
 
         if not exercise_controller.exercise_started and exercise_controller.selected_exercise:   
 
-            body = body_controller.analyze_body(frame,face_controller.faces)
-            exercise_to_do = exercise_controller.analyze_selected_option()
-            exercise = exercise_controller.assign_exercises(body, exercise_to_do)
-            exercise_controller.exercise_started = True
+            if not body_controller.analysis_started:
+                body_controller.analyze_body(frame,face_controller.faces)
 
-            print(body)
-            print(exercise)
-            timer.restart() 
+            elif body_controller.analysis_finished:                
+
+                body = body_controller.body
+                exercise_to_do = exercise_controller.analyze_selected_option()
+                exercise = exercise_controller.assign_exercises(body, exercise_to_do)
+                exercise_controller.exercise_started = True
+
+                print(body)
+                print(exercise)
+                timer.restart()            
 
         # 6. Validate exercise
             
         if not exercise_controller.exercise_done and exercise_controller.exercise_started:
             
             if not timer.has_elapsed(60): # Start counting time for each exercise: 1 minute max
-                
+
                 msg = f"TIEMPO RESTANTE: { 60 - timer.elapsed_time() }"
                 draw_text(frame, msg, pos=(25, 25), font_scale=0.7, text_color=(255, 255, 230), text_color_bg=(18, 185, 0))
 

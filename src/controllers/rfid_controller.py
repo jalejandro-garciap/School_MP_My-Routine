@@ -27,7 +27,7 @@ class RfidController:
 
                     #print(f"Card read: {data}")
                     if has_exercised_today(passenger.id):
-                        self.message = "This user has reached their exercise limit"
+                        self.message = "EL USUARIO ALCANZO SU CUOTA MAXIMA DE EJERCICIOS"
                     else:
                         self.passenger = passenger
                         self.scanned_card = True
@@ -35,7 +35,7 @@ class RfidController:
 
                 else:
                     #print(f"Card read: {data} - Not found")
-                    self.message = "This card is not registered"
+                    self.message = "SU TARJETA NO ESTA REGISTRADA"
 
             except KeyboardInterrupt:
                 #print("RFID reading interrupted by user.")
