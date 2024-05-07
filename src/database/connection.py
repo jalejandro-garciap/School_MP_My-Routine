@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
-DATABASE_URI = 'postgresql+psycopg2://postgres:B2dDD3CCcG-2EBbEbcF4cg563553Ed16@monorail.proxy.rlwy.net:38138/railway'
+DATABASE_URI = 'postgresql+psycopg2://postgres:gwNcMqzBQSZAMJzzdmfOOcrvPlpDfNXg@monorail.proxy.rlwy.net:30231/railway'
 
 engine = create_engine(DATABASE_URI)
 Session = sessionmaker(bind=engine)
