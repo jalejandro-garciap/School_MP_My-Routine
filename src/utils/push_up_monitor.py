@@ -12,7 +12,7 @@ class PushUpMonitor:
         self.count = 0
         self.direction = 0  # 0: Down, 1: Up
         self.form = 0
-        self.feedback = "Fix Form"
+        self.feedback = "Colocate"
         # Started the Push up
         self.start = False
 
@@ -103,25 +103,25 @@ class PushUpMonitor:
                 if self.form == 1:
                     if per == 0:
                         if elbow <= 90 and hip > 160:
-                            self.feedback = "Up"
+                            self.feedback = "Arriba"
                             if self.direction == 0:
                                 self.count += 0.5
                                 self.direction = 1
                                 if self.count.is_integer():
                                     play_sound("counter")
                         else:
-                            self.feedback = "Fix Form"
+                            self.feedback = "Vuelve a tu posicion"
                             
                     if per == 100:
                         if elbow > 160 and shoulder > 40 and hip > 160:
-                            self.feedback = "Down"
+                            self.feedback = "Abajo"
                             if self.direction == 1:
                                 self.count += 0.5
                                 self.direction = 0
                                 if self.count.is_integer():
                                     play_sound("counter")
                         else:
-                            self.feedback = "Fix Form"
+                            self.feedback = "Vuelve a tu posicion"
                                 # form = 0
         # Draw Bar
         if self.form == 1:

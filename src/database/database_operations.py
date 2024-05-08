@@ -1,5 +1,5 @@
 from datetime import date
-from sqlalchemy import func
+from sqlalchemy import and_, not_, func
 from sqlalchemy.orm import Session
 from database.models import Passenger, History, Station
 from database.connection import engine
@@ -10,9 +10,13 @@ def get_passenger_by_card_id(card_id):
 
 def has_exercised_today(passenger_id):
     with Session(engine) as session:
-        today_count = session.query(History).filter(
-            History.passenger_id == passenger_id,
-            History.date == date.today()
+        today_count = session.query(History).join(Passenger).filter(
+            and_(
+                History.passenger_id == passenger_id,
+                History.date == date.today(),
+                History.challenge_completed == True,  # Only if challenge_completed is true
+                not_(Passenger.category == "Admin")  # Excludes administrators
+            )
         ).count()
         return today_count > 0
 
