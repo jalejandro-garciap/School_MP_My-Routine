@@ -41,7 +41,7 @@ def draw_text(
     img,
     msg,
     width = 8,
-    font=cv2.FONT_HERSHEY_SIMPLEX,
+    font=cv2.FONT_HERSHEY_DUPLEX,
     pos=(0, 0),
     font_scale=1,
     font_thickness=2,
