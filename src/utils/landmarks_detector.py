@@ -26,3 +26,14 @@ class LandmarksDetector:
         with self.mp_solutions.pose.Pose(static_image_mode=False, min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
             results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
             return results.pose_landmarks
+        
+    def detect_pushup_landmarks(self, image, mode=False, complexity=1, smooth_landmarks=True,
+                    enable_segmentation=False, smooth_segmentation=True,
+                    detection_confidence=0.5, tracking_confidence=0.5, draw=True):
+        with self.mp_solutions.pose.Pose(static_image_mode=mode, model_complexity=complexity, 
+                               smooth_landmarks=smooth_landmarks, enable_segmentation=enable_segmentation, 
+                               smooth_segmentation=smooth_segmentation,
+                               min_detection_confidence=detection_confidence, 
+                               min_tracking_confidence=tracking_confidence) as pose:
+            results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+        return results.pose_landmarks
