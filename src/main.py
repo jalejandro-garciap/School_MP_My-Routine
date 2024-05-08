@@ -143,10 +143,11 @@ def main():
 
             elif body_controller.analysis_finished:                
 
+                camera.change_camera()
                 body = body_controller.body
                 exercise_to_do = exercise_controller.analyze_selected_option()
                 exercise = exercise_controller.assign_exercises(body, exercise_to_do)
-                exercise_controller.exercise_started = True
+                exercise_controller.exercise_started = True                
 
                 print(body)
                 print(exercise)
