@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 from utils.landmarks_detector import LandmarksDetector
 from utils.ui_utils import draw_text
+from utils.sound_effects import play_sound
+
 
 class PushUpMonitor:
     def __init__(self):
@@ -63,6 +65,7 @@ class PushUpMonitor:
             if self.calculate_distance(right_shoulder,right_wrist) < 60: 
                 self.start = True
             elif self.start and self.calculate_distance(right_shoulder,right_wrist) > 90:
+                play_sound("counter")
                 self.count += 1
                 self.start = False
     

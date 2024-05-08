@@ -7,6 +7,7 @@ from controllers.rfid_controller import RfidController
 from database.database_operations import get_station_by_name, insert_history_record, recharge_passenger_balance
 from utils.timer import Timer
 from utils.ui_utils import draw_text
+from utils.sound_effects import play_sound
 
 STATION_NAME = "CUCEI"
 
@@ -46,6 +47,7 @@ def main():
     timer.start()
     rfid_controller.start_reading()
 
+    sound_played = False
 
     while True:
         frame = camera.capture_frame()
@@ -155,6 +157,10 @@ def main():
         if not exercise_controller.exercise_done and exercise_controller.exercise_started:
             
             if not timer.has_elapsed(60): # Start counting time for each exercise: 1 minute max
+                
+                if(60 - timer.elapsed_time() == 5) and not sound_played : # 5 Seconds left?
+                    play_sound("countdown")
+                    sound_played = True
 
                 msg = f"TIEMPO RESTANTE: { 60 - timer.elapsed_time() }"
                 draw_text(frame, msg, pos=(25, 25), font_scale=0.7, text_color=(255, 255, 230), text_color_bg=(18, 185, 0))
@@ -171,6 +177,12 @@ def main():
             
         if not exercise_controller.show_result and exercise_controller.exercise_done:    
             challenge_completed = exercise_controller.rep_count == exercise.target_reps        
+
+            if challenge_completed:
+                play_sound("winner")
+            else:
+                play_sound("loser")
+
             insert_history_record(
                 challenge_completed=challenge_completed,
                 duration=timer.elapsed_time(),
@@ -182,7 +194,7 @@ def main():
                 )
             timer.restart()
             recharge_passenger_balance(rfid_controller.passenger)
-            exercise_controller.show_result = True
+            exercise_controller.show_result = True            
 
         # 8. Finish
             

@@ -4,6 +4,7 @@ import numpy as np
 from utils.landmarks_detector import LandmarksDetector
 from utils.thresholds import get_thresholds_beginner
 from utils.ui_utils import draw_text, draw_dotted_line
+from utils.sound_effects import play_sound
 
 class SquatMonitor:
     def __init__(self, thresholds = get_thresholds_beginner(), flip_frame = False):
@@ -175,7 +176,7 @@ class SquatMonitor:
         return np.array([denorm_x, denorm_y])
 
     def process(self, frame: np.array):
-        play_sound = None    
+        sound = None    
         display_inactivity = False    
         frame_height, frame_width, _ = frame.shape
 
@@ -216,7 +217,7 @@ class SquatMonitor:
                 if display_inactivity:
                     # cv2.putText(frame, 'Resetting SQUAT_COUNT due to inactivity!!!', (10, frame_height - 90), 
                     #             self.font, 0.5, self.COLORS['blue'], 2, lineType=self.linetype)
-                    play_sound = 'reset_counters'
+                    sound = 'reset_counters'
                     self.state_tracker['INACTIVE_TIME_FRONT'] = 0.0
                     self.state_tracker['start_inactive_time_front'] = time.perf_counter()
 
@@ -365,17 +366,18 @@ class SquatMonitor:
                 if current_state == 's1':
 
                     if len(self.state_tracker['state_seq']) == 3 and not self.state_tracker['INCORRECT_POSTURE']:
+                        play_sound("counter")
                         self.state_tracker['SQUAT_COUNT']+=1
                         self.count+=1
-                        play_sound = str(self.state_tracker['SQUAT_COUNT'])
+                        sound = str(self.state_tracker['SQUAT_COUNT'])
                         
                     elif 's2' in self.state_tracker['state_seq'] and len(self.state_tracker['state_seq'])==1:
                         self.state_tracker['IMPROPER_SQUAT']+=1
-                        play_sound = 'incorrect'
+                        sound = 'incorrect'
 
                     elif self.state_tracker['INCORRECT_POSTURE']:
                         self.state_tracker['IMPROPER_SQUAT']+=1
-                        play_sound = 'incorrect'
+                        sound = 'incorrect'
                         
                     
                     self.state_tracker['state_seq'] = []
@@ -462,7 +464,7 @@ class SquatMonitor:
 
                 if display_inactivity:
                     # cv2.putText(frame, 'Resetting COUNTERS due to inactivity!!!', (10, frame_height - 20), self.font, 0.5, self.COLORS['blue'], 2, lineType=self.linetype)
-                    play_sound = 'reset_counters'
+                    sound = 'reset_counters'
                     self.state_tracker['start_inactive_time'] = time.perf_counter()
                     self.state_tracker['INACTIVE_TIME'] = 0.0
 
@@ -530,7 +532,7 @@ class SquatMonitor:
                 )  
 
             if display_inactivity:
-                play_sound = 'reset_counters'
+                sound = 'reset_counters'
                 self.state_tracker['start_inactive_time'] = time.perf_counter()
                 self.state_tracker['INACTIVE_TIME'] = 0.0
             
@@ -544,4 +546,4 @@ class SquatMonitor:
             self.state_tracker['COUNT_FRAMES'] = np.zeros((5,), dtype=np.int64)
             self.state_tracker['start_inactive_time_front'] = time.perf_counter()
             
-        return frame, play_sound
+        return frame, sound
