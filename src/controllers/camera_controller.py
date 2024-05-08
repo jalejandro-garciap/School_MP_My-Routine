@@ -45,16 +45,16 @@ class CameraController:
                 return i
         return None
 
-    def change_camera(self):
-        new_camera_number = self.find_available_camera()
-        if new_camera_number is not None:
-            self.camera_number = new_camera_number
-            self.initialize_camera()
-            print(f"Switched to camera {new_camera_number}.")
+    def change_camera(self, new_camera_number=None):
+        if new_camera_number is None:
+            new_camera_number = self.find_available_camera()
+            if new_camera_number is not None:
+                self.camera_number = new_camera_number
+                self.initialize_camera()
+                print(f"Switched to camera {new_camera_number}.")
+            else:
+                print("No new cameras found. Keeping the current camera.")
         else:
-            print("No new cameras found. Keeping the current camera.")
-
-    def change_camera(self, new_camera_number):
-        if new_camera_number != self.camera_number:
+          if new_camera_number != self.camera_number:
             self.camera_number = new_camera_number
             self.initialize_camera()

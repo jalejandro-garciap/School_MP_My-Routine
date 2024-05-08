@@ -86,35 +86,29 @@ class BodyController:
             #print("No pose landmarks detected.")
             return None
         
-    def detect_hand_gesture(self, frame):
+    def detect_arm_raised(self, frame):
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        hands_landmarks = self.detector.detect_hand_landmarks(image)
+        pose_landmarks = self.detector.detect_pose_landmarks(image)
 
-        if hands_landmarks:
-            for hand_landmarks in hands_landmarks: 
+        if pose_landmarks:
+            landmarks = pose_landmarks.landmark
+            try:
+                left_shoulder = landmarks[self.detector.mp_pose.LEFT_SHOULDER.value]
+                right_shoulder = landmarks[self.detector.mp_pose.RIGHT_SHOULDER.value]
+                left_elbow = landmarks[self.detector.mp_pose.LEFT_ELBOW.value]
+                right_elbow = landmarks[self.detector.mp_pose.RIGHT_ELBOW.value]
 
-                landmarks = hand_landmarks.landmark
-                self.detector.mp_drawing.draw_landmarks(
-                    frame, hand_landmarks, self.detector.mp_solutions.hands.HAND_CONNECTIONS)
+                # Determine if it is the left or right arm
+                if left_elbow.y < left_shoulder.y:
+                    return "right" # To analize
+                if right_elbow.y < right_shoulder.y:
+                    return "left" # To analize
 
-                try:
-                    index_tip = landmarks[self.detector.mp_hands.INDEX_FINGER_TIP.value]
-                    index_mcp = landmarks[self.detector.mp_hands.INDEX_FINGER_MCP.value]
-                    middle_mcp = landmarks[self.detector.mp_hands.MIDDLE_FINGER_MCP.value]
-                    ring_mcp = landmarks[self.detector.mp_hands.RING_FINGER_MCP.value]
-                    pinky_mcp = landmarks[self.detector.mp_hands.PINKY_MCP.value]
-                    wrist = landmarks[self.detector.mp_hands.WRIST.value]
-                except IndexError:
-                    #print("Incomplete hand landmarks detected.")
-                    return None
-
-                if (index_tip.y < index_mcp.y and middle_mcp.y < ring_mcp.y < pinky_mcp.y):
-                    if index_tip.x < wrist.x:
-                        return "left"
-                    elif index_tip.x > wrist.x:
-                        return "right"
+            except IndexError:
+                #print("Incomplete hand landmarks detected.")
+                return None
         else:
-            #print("No hand landmarks detected.")
+            #print("No pose landmarks detected.")
             return None
 
     def analyze_body(self, frame, faces):

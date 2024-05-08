@@ -108,9 +108,9 @@ def main():
         # 4. Select exercise
                 
         if not exercise_controller.selected_exercise and body_controller.captured_body:
-            hand = body_controller.detect_hand_gesture(frame)
+            arm = body_controller.detect_arm_raised(frame)
 
-            show_status(frame,"ESCOGE CON TUS MANOS", 35) 
+            show_status(frame,"ESCOGE LEVANTANDO TU BRAZO", 35) 
             frame_height, frame_width = frame.shape[0], frame.shape[1]
             pos_msg_h = frame_height // 2
             pos_msg_w_1 = 25   
@@ -121,16 +121,16 @@ def main():
             pos_msg_w_2 = frame_width - text_width      
             draw_text(frame, msg, pos=(pos_msg_w_2, pos_msg_h), font_scale=0.7, text_color=(255, 255, 230), text_color_bg=(255, 191, 0))          
 
-            if hand is not None:
+            if arm is not None:
                 if not timer.has_elapsed(3):
                     msg = f"ESPERA { 3 - timer.elapsed_time() } SEGUNDOS"
                     draw_text(frame, msg, pos=(25, 25), font_scale=0.7, text_color=(255, 255, 230), text_color_bg=(18, 185, 0))
-                    exercise_controller.hands.append(hand)
+                    exercise_controller.hands.append(arm)
                 else:
                     exercise_controller.selected_exercise = True
                     timer.restart()
             else:
-                msg = "MUESTRA TU MANO EN PANTALLA"
+                msg = "MUESTRA TU BRAZO EN PANTALLA"
                 draw_text(frame, msg, pos=(30, 20), font_scale=0.8, text_color=(255, 255, 255), text_color_bg=(10, 0, 255))
                 timer.restart()
 
